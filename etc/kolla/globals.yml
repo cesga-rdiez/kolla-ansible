@@ -154,8 +154,8 @@
 # addresses for that reason.
 #neutron_external_interface: "eth1"
 
-# Valid options are [ openvswitch, ovn, linuxbridge, vmware_nsxv, vmware_nsxv3, vmware_dvs ]
-# if vmware_nsxv3 is selected, enable_openvswitch MUST be set to "no" (default is yes)
+# Valid options are [ openvswitch, ovn, linuxbridge, vmware_nsxv, vmware_nsxv3, vmware_nsxp, vmware_dvs ]
+# if vmware_nsxv3 or vmware_nsxp is selected, enable_openvswitch MUST be set to "no" (default is yes)
 #neutron_plugin_agent: "openvswitch"
 
 # Valid options are [ internal, infoblox ]
@@ -523,6 +523,7 @@
 # Enable / disable Cinder backends
 #cinder_backend_ceph: "no"
 #cinder_backend_vmwarevc_vmdk: "no"
+#cinder_backend_vmware_vstorage_object: "no"
 #cinder_volume_group: "cinder-volumes"
 # Valid options are [ '', redis, etcd ]
 #cinder_coordination_backend: "{{ 'redis' if enable_redis|bool else 'etcd' if enable_etcd|bool else '' }}"
@@ -708,6 +709,7 @@
 #enable_prometheus_openstack_exporter: "{{ enable_prometheus | bool }}"
 #enable_prometheus_elasticsearch_exporter: "{{ enable_prometheus | bool and enable_elasticsearch | bool }}"
 #enable_prometheus_blackbox_exporter: "{{ enable_prometheus | bool }}"
+#enable_prometheus_libvirt_exporter: "{{ enable_prometheus | bool and enable_nova | bool and nova_compute_virt_type in ['kvm', 'qemu'] }}"
 
 # List of extra parameters passed to prometheus. You can add as many to the list.
 #prometheus_cmdline_extras:
@@ -715,6 +717,15 @@
 # List of extra parameters passed to cAdvisor. By default system cgroups
 # and container labels are not exposed to reduce time series cardinality.
 #prometheus_cadvisor_cmdline_extras: "--docker_only --store_container_labels=false --disable_metrics=percpu,referenced_memory,cpu_topology,resctrl,udp,advtcp,sched,hugetlb,memory_numa,tcp,process"
+
+# Extra parameters passed to Prometheus exporters.
+#prometheus_blackbox_exporter_cmdline_extras:
+#prometheus_elasticsearch_exporter_cmdline_extras:
+#prometheus_haproxy_exporter_cmdline_extras:
+#prometheus_memcached_exporter_cmdline_extras:
+#prometheus_mysqld_exporter_cmdline_extras:
+#prometheus_node_exporter_cmdline_extras:
+#prometheus_openstack_exporter_cmdline_extras:
 
 # Example of setting endpoints for prometheus ceph mgr exporter.
 # You should add all ceph mgr's in your external ceph deployment.

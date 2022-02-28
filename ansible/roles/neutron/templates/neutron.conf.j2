@@ -45,6 +45,9 @@ core_plugin = vmware_nsx.plugin.NsxVPlugin
 {% elif neutron_plugin_agent == 'vmware_nsxv3' %}
 core_plugin = vmware_nsx.plugin.NsxV3Plugin
 dhcp_agent_notification = False
+{% elif neutron_plugin_agent == 'vmware_nsxp' %}
+core_plugin = vmware_nsx.plugin.NsxPolicyPlugin
+dhcp_agent_notification = False
 {% elif neutron_plugin_agent == 'vmware_dvs' %}
 core_plugin = vmware_nsx.plugin.NsxDvsPlugin
 {% else %}
@@ -71,6 +74,8 @@ external_dns_driver = designate
 nsx_extension_drivers = vmware_nsxv_dns
 {% elif neutron_plugin_agent == 'vmware_nsxv3' %}
 nsx_extension_drivers = vmware_nsxv3_dns
+{% elif neutron_plugin_agent == 'vmware_nsxp' %}
+nsx_extension_drivers = vmware_nsxp_dns
 {% elif neutron_plugin_agent == 'vmware_dvs' %}
 nsx_extension_drivers = vmware_dvs_dns
 {% endif %}
@@ -121,9 +126,6 @@ memcache_security_strategy = ENCRYPT
 memcache_secret_key = {{ memcache_secret_key }}
 
 memcached_servers = {% for host in groups['memcached'] %}{{ 'api' | kolla_address(host) | put_address_in_context('memcache') }}:{{ memcached_port }}{% if not loop.last %},{% endif %}{% endfor %}
-
-# Workaround for https://bugs.launchpad.net/keystonemiddleware/+bug/1883659
-memcache_use_advanced_pool = True
 
 [oslo_messaging_notifications]
 transport_url = {{ notify_transport_url }}
@@ -188,7 +190,7 @@ user_domain_name = {{ default_user_domain_name }}
 project_name = service
 project_domain_name = {{ default_project_domain_name }}
 os_region_name = {{ openstack_region_name }}
-os_interface = internal
+endpoint_type = internal
 cafile = {{ openstack_cacert }}
 region_name = {{ openstack_region_name }}
 
