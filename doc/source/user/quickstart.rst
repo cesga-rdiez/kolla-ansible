@@ -23,7 +23,10 @@ The host machine must satisfy the following minimum requirements:
 - 40GB disk space
 
 See the :kolla-ansible-doc:`support matrix <user/support-matrix>` for details
-of supported host Operating Systems.
+of supported host Operating Systems. Kolla Ansible supports the default Python
+3.x versions provided by the supported Operating Systems. For more information
+see `tested runtimes <|TESTED_RUNTIMES_GOVERNANCE_URL|>`_.
+
 
 Install dependencies
 ~~~~~~~~~~~~~~~~~~~~
@@ -45,7 +48,7 @@ execution, which is described in
 
 #. Install Python build dependencies:
 
-   For CentOS or RHEL 8, run:
+   For CentOS, RHEL 8 or openEuler, run:
 
    .. code-block:: console
 
@@ -64,7 +67,7 @@ If not installing Kolla Ansible in a virtual environment, skip this section.
 
 #. Install the virtual environment dependencies.
 
-   For CentOS or RHEL 8, you don't need to do anything.
+   For CentOS, RHEL 8 or openEuler, you don't need to do anything.
 
    For Debian or Ubuntu, run:
 
@@ -93,7 +96,7 @@ If not installing Kolla Ansible in a virtual environment, skip this section.
 
    .. code-block:: console
 
-      pip install 'ansible==5.*'
+      pip install 'ansible>=4,<6'
 
 Install dependencies not using a virtual environment
 ----------------------------------------------------
@@ -102,7 +105,7 @@ If installing Kolla Ansible in a virtual environment, skip this section.
 
 #. Install ``pip``.
 
-   For CentOS or RHEL, run:
+   For CentOS, RHEL or openEuler, run:
 
    .. code-block:: console
 
@@ -129,6 +132,12 @@ If installing Kolla Ansible in a virtual environment, skip this section.
 
       sudo dnf install ansible
 
+   For openEuler, run:
+
+   .. code-block:: console
+
+      sudo pip install ansible
+
    For Debian or Ubuntu, run:
 
    .. code-block:: console
@@ -138,7 +147,7 @@ If installing Kolla Ansible in a virtual environment, skip this section.
    .. note::
 
       If the installed Ansible version does not meet the requirements, one can
-      use pip: ``sudo pip install -U 'ansible==5.*'``.
+      use pip: ``sudo pip install -U 'ansible>=4,<6'``.
       Beware system package upgrades might interfere with that so it
       is recommended to uninstall the system package first. One might be better
       off with the virtual environment method to avoid this pitfall.
@@ -192,6 +201,13 @@ Install Kolla-ansible for deployment or evaluation
    .. code-block:: console
 
       cp /path/to/venv/share/kolla-ansible/ansible/inventory/* .
+
+   For ``all-in-one`` scenario in virtual environment add the following
+   to the very beginning of the inventory:
+
+   .. code-block:: console
+
+      localhost ansible_python_interpreter=python
 
    If not using a virtual environment, run:
 
@@ -331,7 +347,7 @@ than one node, edit ``multinode`` inventory:
       errors in the ``ping`` module. To quickly install Python with Ansible you
       can run: for Debian or Ubuntu:
       ``ansible -i multinode all -m raw -a "apt -y install python3"``,
-      and for CentOS or RHEL:
+      and for CentOS, RHEL or openEuler:
       ``ansible -i multinode all -m raw -a "dnf -y install python3"``.
 
 Kolla passwords
@@ -381,28 +397,6 @@ There are a few options that are required to deploy Kolla Ansible:
   .. code-block:: console
 
      kolla_base_distro: "centos"
-
-  Next "type" of installation needs to be configured.
-  Choices are:
-
-  binary
-   using repositories like apt or dnf
-
-  source (default)
-   using raw source archives, git repositories or local source directory
-
-  .. note::
-
-     This only affects OpenStack services. Infrastructure services are
-     always "binary".
-
-  .. note::
-
-     Source builds are proven to be slightly more reliable than binary.
-
-  .. code-block:: console
-
-     kolla_install_type: "source"
 
 * Networking
 

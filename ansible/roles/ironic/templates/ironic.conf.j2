@@ -1,10 +1,3 @@
-# NOTE(mgoddard): Ironic is changing the default value of [deploy]
-# default_boot_option from 'netboot' to 'local'. If the option is not set,
-# ironic will log a warning during the transition period. Even so,
-# kolla-ansible should not set a value for this option as the warning is
-# intended to inform operators of the impending change. The warning may be
-# suppressed by the deployer by setting a value for the option.
-
 [DEFAULT]
 {% if not ironic_enable_keystone_integration | bool %}
 auth_strategy = noauth
@@ -182,20 +175,14 @@ deploy_logs_storage_backend = local
 deploy_logs_collect = always
 
 [pxe]
-pxe_append_params = nofb nomodeset vga=normal console=tty0 console=ttyS0,{{ ironic_console_serial_speed }}
-{% if enable_ironic_ipxe | bool %}
-{# NOTE(mgoddard): iPXE uses the TFTP image cache (tftp_master_path, default
-   /tftpboot/master_images), in which images get hard linked to the http_root
-   directory (/httpboot). These must be on the same device, but /httpboot and
-   /tftpboot live in separate Docker volumes. Override the default paths for
-   iPXE to place them both in /httpboot. This prevents mixing PXE and iPXE. #}
-tftp_root = /httpboot
-tftp_master_path = /httpboot/master_images
+kernel_append_params = nofb nomodeset vga=normal console=tty0 console=ttyS0,{{ ironic_console_serial_speed }}
+tftp_root = /var/lib/ironic/tftpboot
+tftp_master_path = /var/lib/ironic/master_images
 tftp_server = {{ api_interface_address }}
-{% endif %}
 
 [deploy]
-http_url = {{ ironic_ipxe_url }}
+http_root = /var/lib/ironic/httpboot
+http_url = {{ ironic_http_url }}
 
 [oslo_middleware]
 enable_proxy_headers_parsing = True

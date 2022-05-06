@@ -44,8 +44,6 @@ config_strategy: "COPY_ALWAYS"
 
 # Valid options are ['centos', 'debian', 'rhel', 'ubuntu']
 kolla_base_distro: "centos"
-# Valid options are [ binary, source ]
-kolla_install_type: "source"
 
 kolla_internal_vip_address: "{{ kolla_internal_address | default('') }}"
 kolla_internal_fqdn: "{{ kolla_internal_vip_address }}"
@@ -352,7 +350,7 @@ ironic_inspector_internal_fqdn: "{{ kolla_internal_fqdn }}"
 ironic_inspector_external_fqdn: "{{ kolla_external_fqdn }}"
 ironic_inspector_port: "5050"
 ironic_inspector_listen_port: "{{ ironic_inspector_port }}"
-ironic_ipxe_port: "8089"
+ironic_http_port: "8089"
 
 iscsi_port: "3260"
 
@@ -395,7 +393,6 @@ monasca_api_port: "8070"
 monasca_log_api_port: "{{ monasca_api_port }}"
 monasca_agent_forwarder_port: "17123"
 monasca_agent_statsd_port: "8125"
-monasca_grafana_server_port: "3001"
 
 murano_api_port: "8082"
 
@@ -457,6 +454,7 @@ prometheus_rabbitmq_exporter_port: "{{ rabbitmq_prometheus_port }}"
 prometheus_cadvisor_port: "18080"
 prometheus_fluentd_integration_port: "24231"
 prometheus_libvirt_exporter_port: "9177"
+prometheus_etcd_integration_port: "{{ etcd_client_port }}"
 
 # Prometheus alertmanager ports
 prometheus_alertmanager_port: "9093"
@@ -468,8 +466,6 @@ prometheus_elasticsearch_exporter_port: "9108"
 
 # Prometheus blackbox-exporter ports
 prometheus_blackbox_exporter_port: "9115"
-
-qdrouterd_port: "31459"
 
 rabbitmq_port: "{{ '5671' if rabbitmq_enable_tls | bool else '5672' }}"
 rabbitmq_management_port: "15672"
@@ -516,6 +512,8 @@ syslog_udp_port: "{{ fluentd_syslog_port }}"
 tacker_server_port: "9890"
 
 trove_api_port: "8779"
+
+venus_api_port: "10010"
 
 watcher_api_port: "9322"
 
@@ -604,6 +602,7 @@ enable_barbican: "no"
 enable_blazar: "no"
 enable_ceilometer: "no"
 enable_ceilometer_ipmi: "no"
+enable_ceilometer_prometheus_pushgateway: "no"
 enable_cells: "no"
 enable_central_logging: "no"
 enable_ceph_rgw: "no"
@@ -652,8 +651,8 @@ enable_horizon_watcher: "{{ enable_watcher | bool }}"
 enable_horizon_zun: "{{ enable_zun | bool }}"
 enable_influxdb: "{{ enable_monasca | bool or (enable_cloudkitty | bool and cloudkitty_storage_backend == 'influxdb') }}"
 enable_ironic: "no"
-enable_ironic_ipxe: "no"
 enable_ironic_neutron_agent: "{{ enable_neutron | bool and enable_ironic | bool }}"
+# TODO(yoctozepto): Remove the deprecated enable_ironic_pxe_uefi in Zed.
 enable_ironic_pxe_uefi: "no"
 enable_iscsid: "{{ enable_cinder | bool and enable_cinder_backend_iscsi | bool }}"
 enable_kafka: "{{ enable_monasca | bool }}"
@@ -686,6 +685,7 @@ enable_neutron_trunk: "no"
 enable_neutron_metering: "no"
 enable_neutron_infoblox_ipam_agent: "no"
 enable_neutron_port_forwarding: "no"
+enable_nova_libvirt_container: "{{ nova_compute_virt_type in ['kvm', 'qemu'] }}"
 enable_nova_serialconsole_proxy: "no"
 enable_nova_ssh: "yes"
 enable_octavia: "no"
@@ -696,7 +696,6 @@ enable_ovs_dpdk: "no"
 enable_osprofiler: "no"
 enable_placement: "{{ enable_nova | bool or enable_zun | bool }}"
 enable_prometheus: "no"
-enable_qdrouterd: "{{ 'yes' if om_rpc_transport == 'amqp' else 'no' }}"
 enable_redis: "no"
 enable_sahara: "no"
 enable_senlin: "no"
@@ -710,6 +709,7 @@ enable_tacker: "no"
 enable_telegraf: "no"
 enable_trove: "no"
 enable_trove_singletenant: "no"
+enable_venus: "no"
 enable_vitrage: "no"
 enable_watcher: "no"
 enable_zookeeper: "{{ enable_kafka | bool or enable_storm | bool }}"
@@ -802,11 +802,6 @@ outward_rabbitmq_user: "openstack"
 rabbitmq_enable_tls: "no"
 # CA certificate bundle in RabbitMQ container.
 rabbitmq_cacert: "/etc/ssl/certs/{{ 'ca-certificates.crt' if kolla_base_distro in ['debian', 'ubuntu'] else 'ca-bundle.trust.crt' }}"
-
-####################
-# Qdrouterd options
-####################
-qdrouterd_user: "openstack"
 
 ####################
 # HAProxy options
@@ -960,7 +955,8 @@ cloudkitty_storage_backend: "influxdb"
 #######################
 # Valid options are [ bind9, infoblox ]
 designate_backend: "bind9"
-designate_ns_record: "sample.openstack.org"
+designate_ns_record:
+  - "ns1.example.org"
 designate_backend_external: "no"
 designate_backend_external_bind9_nameservers: ""
 # Valid options are [ '', redis ]
@@ -968,6 +964,9 @@ designate_coordination_backend: "{{ 'redis' if enable_redis|bool else '' }}"
 
 designate_internal_endpoint: "{{ internal_protocol }}://{{ designate_internal_fqdn | put_address_in_context('url') }}:{{ designate_api_port }}"
 designate_public_endpoint: "{{ public_protocol }}://{{ designate_external_fqdn | put_address_in_context('url') }}:{{ designate_api_port }}"
+
+designate_enable_notifications_sink: "yes"
+designate_notifications_topic_name: "notifications_designate"
 
 #######################
 # Neutron options
@@ -1009,7 +1008,7 @@ nova_backend_ceph: "no"
 nova_backend: "{{ 'rbd' if nova_backend_ceph | bool else 'default' }}"
 # Valid options are [ kvm, qemu, vmware ]
 nova_compute_virt_type: "kvm"
-nova_instance_datadir_volume: "nova_compute"
+nova_instance_datadir_volume: "{{ 'nova_compute' if enable_nova_libvirt_container | bool else '/var/lib/nova' }}"
 nova_safety_upgrade: "no"
 # Valid options are [ none, novnc, spice ]
 nova_console: "novnc"
@@ -1109,11 +1108,13 @@ enable_prometheus_elasticsearch_exporter: "{{ enable_prometheus | bool and enabl
 enable_prometheus_blackbox_exporter: "{{ enable_prometheus | bool }}"
 enable_prometheus_rabbitmq_exporter: "{{ enable_prometheus | bool and enable_rabbitmq | bool }}"
 enable_prometheus_libvirt_exporter: "{{ enable_prometheus | bool and enable_nova | bool and nova_compute_virt_type in ['kvm', 'qemu'] }}"
+enable_prometheus_etcd_integration: "{{ enable_prometheus | bool and enable_etcd | bool }}"
 
 prometheus_alertmanager_user: "admin"
-prometheus_openstack_exporter_interval: "60s"
+prometheus_scrape_interval: "60s"
+prometheus_openstack_exporter_interval: "{{ prometheus_scrape_interval }}"
 prometheus_openstack_exporter_timeout: "10s"
-prometheus_elasticsearch_exporter_interval: "60s"
+prometheus_elasticsearch_exporter_interval: "{{ prometheus_scrape_interval }}"
 prometheus_cmdline_extras:
 prometheus_ceph_mgr_exporter_endpoints: []
 prometheus_openstack_exporter_endpoint_type: "internal"
@@ -1176,6 +1177,9 @@ grafana_public_endpoint: "{{ public_protocol }}://{{ kolla_external_fqdn | put_a
 #############
 ironic_internal_endpoint: "{{ internal_protocol }}://{{ ironic_internal_fqdn | put_address_in_context('url') }}:{{ ironic_api_port }}"
 ironic_public_endpoint: "{{ public_protocol }}://{{ ironic_external_fqdn | put_address_in_context('url') }}:{{ ironic_api_port }}"
+
+# Valid options are [ '', redis, etcd ]
+ironic_coordination_backend: "{{ 'redis' if enable_redis|bool else 'etcd' if enable_etcd|bool else '' }}"
 
 ########
 # Swift

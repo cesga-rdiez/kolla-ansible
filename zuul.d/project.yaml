@@ -3,7 +3,7 @@
     templates:
       - check-requirements
       - openstack-cover-jobs
-      - openstack-python3-yoga-jobs
+      - openstack-python3-zed-jobs
       - ansible-role-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
@@ -12,6 +12,8 @@
       jobs:
         - kolla-ansible-centos8s-source
         - kolla-ansible-debian-source
+        - kolla-ansible-openeuler-source
+        - kolla-ansible-rocky8-source
         - kolla-ansible-ubuntu-source
         - kolla-ansible-centos8s-source-kvm
         - kolla-ansible-ubuntu-source-kvm
@@ -20,6 +22,7 @@
         - kolla-ansible-centos8s-source-bifrost
         - kolla-ansible-ubuntu-source-bifrost
         - kolla-ansible-centos8s-source-zun
+        - kolla-ansible-debian-source-zun
         - kolla-ansible-ubuntu-source-zun
         - kolla-ansible-centos8s-source-swift
         - kolla-ansible-ubuntu-source-swift
@@ -31,14 +34,12 @@
         - kolla-ansible-centos8s-source-masakari
         - kolla-ansible-ubuntu-source-masakari
         - kolla-ansible-centos8s-source-ironic
-        - kolla-ansible-centos8s-binary-ironic
         - kolla-ansible-debian-source-ironic
         - kolla-ansible-ubuntu-source-ironic
         - kolla-ansible-centos8s-source-upgrade
         - kolla-ansible-debian-source-upgrade
         - kolla-ansible-ubuntu-source-upgrade
-        - kolla-ansible-centos8s-binary
-        - kolla-ansible-ubuntu-binary
+        - kolla-ansible-ubuntu-binary-upgrade
         - kolla-ansible-centos8s-source-cells
         - kolla-ansible-centos8s-source-mariadb
         - kolla-ansible-ubuntu-source-mariadb
@@ -48,6 +49,8 @@
         - kolla-ansible-ubuntu-source-ovn
         - kolla-ansible-centos8s-source-prometheus-efk
         - kolla-ansible-ubuntu-source-prometheus-efk
+        - kolla-ansible-centos8s-source-venus
+        - kolla-ansible-ubuntu-source-venus
         - kolla-ansible-centos8s-source-monasca
         - kolla-ansible-centos8s-source-cephadm
         - kolla-ansible-ubuntu-source-cephadm

@@ -95,7 +95,7 @@
       - name: "conf/input/04-openstack-wsgi.conf.j2"
         enabled: true
       - name: "conf/input/05-libvirt.conf.j2"
-        enabled: true
+        enabled: "{{ enable_nova | bool and enable_nova_libvirt_container | bool }}"
       - name: "conf/input/06-zookeeper.conf.j2"
         enabled: true
       - name: "conf/input/07-kafka.conf.j2"
@@ -103,6 +103,8 @@
       - name: "conf/input/08-prometheus.conf.j2"
         enabled: "{{ enable_prometheus_fluentd_integration | bool }}"
       - name: "conf/input/09-monasca.conf.j2"
+        enabled: true
+      - name: "conf/input/10-openvswitch.conf.j2"
         enabled: true
     customised_input_files: "{{ find_custom_fluentd_inputs.files | map(attribute='path') | list }}"
     # Filters
@@ -186,7 +188,7 @@
       - { name: "neutron", enabled: "{{ enable_neutron | bool }}" }
       - { name: "neutron-tls-proxy", enabled: "{{ neutron_enable_tls_backend | bool }}" }
       - { name: "nova", enabled: "{{ enable_nova | bool }}" }
-      - { name: "nova-libvirt", enabled: "{{ enable_nova | bool and nova_compute_virt_type in ['kvm', 'qemu'] }}" }
+      - { name: "nova-libvirt", enabled: "{{ enable_nova | bool and enable_nova_libvirt_container | bool }}" }
       - { name: "octavia", enabled: "{{ enable_octavia | bool }}" }
       - { name: "openvswitch", enabled: "{{ enable_openvswitch | bool }}" }
       - { name: "outward-rabbitmq", enabled: "{{ enable_outward_rabbitmq | bool }}" }
@@ -201,6 +203,7 @@
       - { name: "swift", enabled: "{{ enable_swift | bool }}" }
       - { name: "tacker", enabled: "{{ enable_tacker | bool }}" }
       - { name: "trove", enabled: "{{ enable_trove | bool }}" }
+      - { name: "venus", enabled: "{{ enable_venus | bool }}" }
       - { name: "vitrage", enabled: "{{ enable_vitrage | bool }}" }
       - { name: "watcher", enabled: "{{ enable_watcher | bool }}" }
       - { name: "zookeeper", enabled: "{{ enable_zookeeper | bool }}" }

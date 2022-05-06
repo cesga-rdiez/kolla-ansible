@@ -13,7 +13,11 @@ host_os_distributions:
     - "8"
   Debian:
     - "bullseye"
+  openEuler:
+    - "20.03"
   RHEL:
+    - "8"
+  Rocky:
     - "8"
   Ubuntu:
     - "focal"
